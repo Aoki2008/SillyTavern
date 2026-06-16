@@ -239,7 +239,13 @@ app.get('/login', loginPageMiddleware);
 const webpackMiddleware = getWebpackServeMiddleware();
 app.use(webpackMiddleware);
 app.use(userCssMiddleware);
-app.use(express.static(path.join(serverDirectory, 'public'), {}));
+app.use(express.static(path.join(serverDirectory, 'public'), {
+    // Serve cached assets without per-request revalidation round-trips.
+    // Asset URLs are unversioned, so stale code after an update is purged by
+    // the cacheBuster middleware (Clear-Site-Data on the next index load).
+    // No `immutable`: a hard refresh still revalidates as a fallback.
+    maxAge: '1d',
+}));
 
 // Public API
 app.use('/api/users', usersPublicRouter);
